@@ -5,26 +5,15 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "awsiotsdk_response_code.h"
+#include "network_connection.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct mqtt_ctx_s;
 typedef struct mqtt_ctx_s *mqtt_ctx_h;
-
-typedef int awsiotsdk_response_code_t;
-
-typedef struct {
-    char *endpoint;
-    uint32_t endpoint_port;
-    char *root_ca_path;
-    char *device_cert_path;
-    char *device_private_key_path;
-    uint32_t tls_handshake_timeout;
-    uint32_t tls_read_timeout;
-    uint32_t tls_write_timeout;
-    bool server_verification_flag;
-} net_conn_params_t;
 
 typedef enum {
     MQTT_3_1_1 = 4    ///< MQTT 3.1.1 (protocol message byte = 4)
@@ -54,7 +43,7 @@ typedef struct {
 } mqtt_subscribtion_t;
 
 void mqtt_destroy(mqtt_ctx_h mqtt_ctx);
-awsiotsdk_response_code_t mqtt_create(net_conn_params_t *net_conn_params,
+awsiotsdk_response_code_t mqtt_create(network_connection_h network_connection,
     uint32_t mqtt_command_timeout, mqtt_ctx_h *mqtt_ctx);
 awsiotsdk_response_code_t mqtt_connect(mqtt_ctx_h mqtt_ctx,
     uint32_t action_reponse_timeout, bool is_clean_session,

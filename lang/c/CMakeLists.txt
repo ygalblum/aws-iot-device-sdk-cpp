@@ -36,8 +36,16 @@ endif()
 # Target : Build Lang C Shared Library #
 ########################################
 set(C_LIB_TARGET_NAME aws-iot-sdk-cpp-c)
+
+# Set Sources
+set(C_LIB_SRC_BASE_DIR "${CMAKE_SOURCE_DIR}/lang/c")
+set(C_LIB_SRCS
+    "${C_LIB_SRC_BASE_DIR}/mqtt_client.cpp"
+    "${C_LIB_SRC_BASE_DIR}/network_connection.cpp"
+)
+
 # Add Target
-add_library(${C_LIB_TARGET_NAME} SHARED "${CMAKE_SOURCE_DIR}/lang/c/mqtt_client.cpp")
+add_library(${C_LIB_TARGET_NAME} SHARED ${C_LIB_SRCS})
 
 # Add Target specific includes
 target_include_directories(${C_LIB_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/lang/c)

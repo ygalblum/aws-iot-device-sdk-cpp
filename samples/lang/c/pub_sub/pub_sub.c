@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "network_connection.h"
 #include "mqtt_client.h"
 
 #define MQTT_ACTION_REQUEST_TIMEOUT (20 * 1000)
@@ -48,9 +49,16 @@ static awsiotsdk_response_code_t msg_received(const char *topic,
 int main(void)
 {
     mqtt_ctx_h mqtt_ctx = NULL;
+    network_connection_h network_connection = NULL;
     awsiotsdk_response_code_t rc;
 
-    rc = mqtt_create(&g_net_conn_params, MQTT_ACTION_REQUEST_TIMEOUT,
+    rc = network_connection_create(&g_net_conn_params, &network_connection);
+    if (rc) {
+        printf("Failed to create a network connection\n");
+        goto Exit;
+    }
+
+    rc = mqtt_create(network_connection, MQTT_ACTION_REQUEST_TIMEOUT,
         &mqtt_ctx);
     if (rc) {
         printf("Failed to create MQTT\n");
@@ -87,6 +95,10 @@ int main(void)
 Exit:
     if (mqtt_ctx) {
         mqtt_destroy(mqtt_ctx);
+    }
+
+    if (network_connection) {
+        network_connection_destroy(network_connection);
     }
 
     return rc;

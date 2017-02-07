@@ -8,10 +8,11 @@
 #include "OpenSSLConnection.hpp"
 #endif
 
-#include <ResponseCode.hpp>
-#include <NetworkConnection.hpp>
-#include <mqtt/Client.hpp>
-#include <mqtt_client.h>
+#include "ResponseCode.hpp"
+#include "network_connection.h"
+#include "network_connection.hpp"
+#include "mqtt/Client.hpp"
+#include "mqtt_client.h"
 
 #include "util/logging/Logging.hpp"
 #include "util/logging/LogMacros.hpp"
@@ -44,75 +45,10 @@ class MqttMsgCtx : public mqtt::SubscriptionHandlerContextData {
 };
 
 typedef struct mqtt_ctx_s {
-    std::shared_ptr<NetworkConnection> p_network_connection_;
     std::shared_ptr<MqttClient> p_iot_client_;
     std::shared_ptr<std::unordered_map<
         std::string, std::shared_ptr<MqttMsgCtx>>> p_mqtt_msg_ctx_map;
 } mqtt_ctx_t;
-
-static ResponseCode CreateNetworkConnection(mqtt_ctx_t *mqtt_ctx,
-    net_conn_params_t *net_conn_params)
-{
-    ResponseCode rc = ResponseCode::SUCCESS;
-    util::String
-        endpoint = net_conn_params->endpoint,
-        root_ca_path = net_conn_params->root_ca_path,
-        device_cert_path = net_conn_params->device_cert_path,
-        device_private_key_path = net_conn_params->device_private_key_path;
-    std::chrono::milliseconds
-        tls_handshake_timeout{net_conn_params->tls_handshake_timeout},
-        tls_read_timeout{net_conn_params->tls_read_timeout},
-        tls_write_timeout {net_conn_params->tls_write_timeout};
-
-#ifdef USE_WEBSOCKETS
-    /*FIXME*/
-    mqtt_ctx->p_network_connection_ = std::shared_ptr<NetworkConnection>(
-        new network::WebSocketConnection(
-        endpoint,
-        net_conn_params->endpoint_port,
-        root_ca_location,
-
-        ConfigCommon::aws_region_,
-        ConfigCommon::aws_access_key_id_,
-        ConfigCommon::aws_secret_access_key_,
-        ConfigCommon::aws_session_token_,
-        ConfigCommon::tls_handshake_timeout_,
-        ConfigCommon::tls_read_timeout_,
-        ConfigCommon::tls_write_timeout_, true));
-    if(nullptr == p_network_connection_) {
-        AWS_LOG_ERROR(LOG_TAG_LANG_C, "Failed to initialize Network Connection with rc : %d", static_cast<int>(rc));
-        rc = ResponseCode::FAILURE;
-    }
-#elif defined USE_MBEDTLS
-    mqtt_ctx->p_network_connection_ =
-        std::make_shared<network::MbedTLSConnection>(endpoint,
-            net_conn_params->endpoint_port, root_ca_path, device_cert_path,
-            device_key_path, tls_handshake_timeout, tls_read_timeout,
-            tls_write_timeout, net_conn_params->server_verification_flag);
-    if(nullptr == mqtt_ctx->p_network_connection_) {
-        AWS_LOG_ERROR(LOG_TAG_LANG_C, "Failed to initialize Network "
-            "Connection with rc : %d", static_cast<int>(rc));
-        rc = ResponseCode::FAILURE;
-    }
-#else
-    std::shared_ptr<network::OpenSSLConnection> p_network_connection =
-        std::make_shared<network::OpenSSLConnection>(endpoint,
-            net_conn_params->endpoint_port, root_ca_path, device_cert_path,
-            device_private_key_path, tls_handshake_timeout, tls_read_timeout,
-            tls_write_timeout, net_conn_params->server_verification_flag);
-    rc = p_network_connection->Initialize();
-
-    if(ResponseCode::SUCCESS != rc) {
-        AWS_LOG_ERROR(LOG_TAG_LANG_C, "Failed to initialize Network "
-            "Connection with rc : %d", static_cast<int>(rc));
-        rc = ResponseCode::FAILURE;
-    } else {
-        mqtt_ctx->p_network_connection_ =
-            std::dynamic_pointer_cast<NetworkConnection>(p_network_connection);
-    }
-#endif
-    return rc;
-}
 
 void mqtt_destroy(mqtt_ctx_h mqtt_ctx)
 {
@@ -120,17 +56,19 @@ void mqtt_destroy(mqtt_ctx_h mqtt_ctx)
         return;
     }
 
-    mqtt_ctx->p_network_connection_ = nullptr;
     mqtt_ctx->p_iot_client_ = nullptr;
     free(mqtt_ctx);
 }
 
-awsiotsdk_response_code_t mqtt_create(net_conn_params_t *net_conn_params,
+awsiotsdk_response_code_t mqtt_create(network_connection_h network_connection,
     uint32_t mqtt_command_timeout, mqtt_ctx_h *mqtt_ctx)
 {
     mqtt_ctx_t *ctx;
     ResponseCode rc;
     std::chrono::milliseconds _mqtt_command_timeout{mqtt_command_timeout};
+
+	std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system = std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Debug);
+    awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
 
     ctx = (mqtt_ctx_t *)malloc(sizeof(*ctx));
     if (!ctx) {
@@ -138,15 +76,8 @@ awsiotsdk_response_code_t mqtt_create(net_conn_params_t *net_conn_params,
         goto Error;
     }
 
-    rc = CreateNetworkConnection(ctx, net_conn_params);
-    if (ResponseCode::SUCCESS != rc) {
-        AWS_LOG_ERROR(LOG_TAG_LANG_C, "Failed to initialize network "
-            "connection");
-        goto Error;
-    }
-
     ctx->p_iot_client_ = std::shared_ptr<MqttClient>(
-        MqttClient::Create(ctx->p_network_connection_,
+        MqttClient::Create(GetNetworkConnection(network_connection),
         _mqtt_command_timeout));
     if(nullptr == ctx->p_iot_client_) {
         AWS_LOG_ERROR(LOG_TAG_LANG_C, "Failed to create an MQTT client");
