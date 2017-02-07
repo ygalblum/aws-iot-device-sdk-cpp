@@ -44,11 +44,11 @@ class MqttMsgCtx : public mqtt::SubscriptionHandlerContextData {
         }
 };
 
-typedef struct mqtt_ctx_s {
+struct mqtt_ctx_s {
     std::shared_ptr<MqttClient> p_iot_client_;
     std::shared_ptr<util::Map<
         std::string, std::shared_ptr<MqttMsgCtx>>> p_mqtt_msg_ctx_map;
-} mqtt_ctx_t;
+};
 
 void mqtt_destroy(mqtt_ctx_h mqtt_ctx)
 {
@@ -64,14 +64,14 @@ void mqtt_destroy(mqtt_ctx_h mqtt_ctx)
 awsiotsdk_response_code_t mqtt_create(network_connection_h network_connection,
     uint32_t mqtt_command_timeout, mqtt_ctx_h *mqtt_ctx)
 {
-    mqtt_ctx_t *ctx;
+    mqtt_ctx_h ctx;
     ResponseCode rc;
     std::chrono::milliseconds _mqtt_command_timeout{mqtt_command_timeout};
 
 	std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system = std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Debug);
     awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
 
-    ctx = (mqtt_ctx_t *)malloc(sizeof(*ctx));
+    ctx = (mqtt_ctx_h)malloc(sizeof(*ctx));
     if (!ctx) {
         rc = ResponseCode::FAILURE;
         goto Error;
