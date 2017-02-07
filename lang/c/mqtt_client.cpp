@@ -46,7 +46,7 @@ class MqttMsgCtx : public mqtt::SubscriptionHandlerContextData {
 
 typedef struct mqtt_ctx_s {
     std::shared_ptr<MqttClient> p_iot_client_;
-    std::shared_ptr<std::unordered_map<
+    std::shared_ptr<util::Map<
         std::string, std::shared_ptr<MqttMsgCtx>>> p_mqtt_msg_ctx_map;
 } mqtt_ctx_t;
 
@@ -57,6 +57,7 @@ void mqtt_destroy(mqtt_ctx_h mqtt_ctx)
     }
 
     mqtt_ctx->p_iot_client_ = nullptr;
+    mqtt_ctx->p_mqtt_msg_ctx_map = nullptr;
     free(mqtt_ctx);
 }
 
@@ -86,8 +87,8 @@ awsiotsdk_response_code_t mqtt_create(network_connection_h network_connection,
     }
 
     ctx->p_mqtt_msg_ctx_map = std::shared_ptr<
-        std::unordered_map<std::string, std::shared_ptr<MqttMsgCtx>>>(
-        new std::unordered_map<std::string, std::shared_ptr<MqttMsgCtx>>);
+        util::Map<std::string, std::shared_ptr<MqttMsgCtx>>>(
+        new util::Map<std::string, std::shared_ptr<MqttMsgCtx>>);
     *mqtt_ctx = ctx;
 
     return (awsiotsdk_response_code_t)ResponseCode::SUCCESS;
@@ -184,9 +185,9 @@ awsiotsdk_response_code_t mqtt_subscribe(mqtt_ctx_h mqtt_ctx,
 
     for (size_t i = 0; i < mqtt_subscribtions_len; ++i) {
         mqtt_subscribtion_t *mqtt_subscribtion = &mqtt_subscribtions[i];
-        auto search =
-            mqtt_ctx->p_mqtt_msg_ctx_map->find(mqtt_subscribtion->topic);
-        if(search != mqtt_ctx->p_mqtt_msg_ctx_map->end()) {
+        util::Map<std::string, std::shared_ptr<MqttMsgCtx>>::const_iterator
+            itr =  mqtt_ctx->p_mqtt_msg_ctx_map->find(mqtt_subscribtion->topic);
+        if(itr != mqtt_ctx->p_mqtt_msg_ctx_map->end()) {
             AWS_LOG_ERROR(LOG_TAG_LANG_C, "Already regsitered to this topic "
                 "[%s]", mqtt_subscribtion->topic);
             return
