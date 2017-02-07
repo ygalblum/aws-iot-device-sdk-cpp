@@ -40,8 +40,9 @@ set(C_LIB_TARGET_NAME aws-iot-sdk-cpp-c)
 # Set Sources
 set(C_LIB_SRC_BASE_DIR "${CMAKE_SOURCE_DIR}/lang/c")
 set(C_LIB_SRCS
-    "${C_LIB_SRC_BASE_DIR}/mqtt_client.cpp"
     "${C_LIB_SRC_BASE_DIR}/network_connection.cpp"
+    "${C_LIB_SRC_BASE_DIR}/mqtt_client.cpp"
+    "${C_LIB_SRC_BASE_DIR}/shadow.cpp"
 )
 
 # Add Target
