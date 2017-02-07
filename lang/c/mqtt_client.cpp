@@ -303,3 +303,8 @@ void set_max_reconnect_backoff_timeout(mqtt_ctx_h mqtt_ctx,
 
 } /* extern "C" */
 
+std::shared_ptr<awsiotsdk::MqttClient> GetMqttClient(mqtt_ctx_h mqtt_ctx)
+{
+    return mqtt_ctx->p_iot_client_;
+}
+
