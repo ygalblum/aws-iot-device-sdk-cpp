@@ -34,6 +34,7 @@ elseif(APPLE)
 elseif(WIN32)
 	set(CUSTOM_COMPILER_FLAGS "/W4")
 endif()
+ENABLE_LANGUAGE(C)
 
 #############################
 # Add SDK Target #
@@ -133,3 +134,7 @@ add_subdirectory(tests/unit)
 add_subdirectory(samples/PubSub)
 
 add_subdirectory(samples/ShadowDelta)
+
+add_subdirectory(lang/c)
+
+add_subdirectory(samples/lang/c/pub_sub)
