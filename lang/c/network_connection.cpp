@@ -9,9 +9,7 @@
 #include "network_connection.h"
 #include "network_connection.hpp"
 
-#include "util/logging/Logging.hpp"
 #include "util/logging/LogMacros.hpp"
-#include "util/logging/ConsoleLogSystem.hpp"
 #define LOG_TAG_LANG_C "[Language - C]"
 
 using namespace awsiotsdk;
