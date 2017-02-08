@@ -14,9 +14,7 @@
 #include "mqtt/Client.hpp"
 #include "mqtt_client.h"
 
-#include "util/logging/Logging.hpp"
 #include "util/logging/LogMacros.hpp"
-#include "util/logging/ConsoleLogSystem.hpp"
 #define LOG_TAG_LANG_C "[Language - C]"
 
 using namespace awsiotsdk;
@@ -67,9 +65,6 @@ awsiotsdk_response_code_t mqtt_create(network_connection_h network_connection,
     mqtt_ctx_h ctx;
     ResponseCode rc;
     std::chrono::milliseconds _mqtt_command_timeout{mqtt_command_timeout};
-
-	std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system = std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Debug);
-    awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
 
     ctx = (mqtt_ctx_h)malloc(sizeof(*ctx));
     if (!ctx) {

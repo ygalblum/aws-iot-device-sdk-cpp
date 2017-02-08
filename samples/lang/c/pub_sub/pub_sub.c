@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "logging.h"
 #include "network_connection.h"
 #include "mqtt_client.h"
 
@@ -52,6 +53,8 @@ int main(void)
     network_connection_h network_connection = NULL;
     awsiotsdk_response_code_t rc;
 
+    initialize_aws_logging(AWS_LOG_SYS_CONSOLE, AWS_LOG_LEVEL_DEBUG);
+
     rc = network_connection_create(&g_net_conn_params, &network_connection);
     if (rc) {
         printf("Failed to create a network connection\n");
@@ -100,6 +103,8 @@ Exit:
     if (network_connection) {
         network_connection_destroy(network_connection);
     }
+
+    shutdown_aws_logging();
 
     return rc;
 }

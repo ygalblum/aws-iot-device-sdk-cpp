@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <errno.h>
 
+#include "logging.h"
 #include "network_connection.h"
 #include "mqtt_client.h"
 #include "shadow.h"
@@ -121,6 +122,8 @@ int main(void)
     json_error_t json_err;
     bool locked = false;
     awsiotsdk_response_code_t rc;
+
+    initialize_aws_logging(AWS_LOG_SYS_CONSOLE, AWS_LOG_LEVEL_DEBUG);
 
     rc = network_connection_create(&g_net_conn_params, &network_connection);
     if (rc) {
@@ -274,6 +277,8 @@ Exit:
     if (network_connection) {
         network_connection_destroy(network_connection);
     }
+
+    shutdown_aws_logging();
 
     return rc;
 }
