@@ -77,9 +77,9 @@ awsiotsdk_response_code_t mqtt_create(network_connection_h network_connection,
         goto Error;
     }
 
-    ctx->p_iot_client_ = std::shared_ptr<MqttClient>(
+    ctx->p_iot_client_ = std::shared_ptr<MqttClient>(std::move(
         MqttClient::Create(GetNetworkConnection(network_connection),
-        _mqtt_command_timeout));
+        _mqtt_command_timeout)));
     if(nullptr == ctx->p_iot_client_) {
         AWS_LOG_ERROR(LOG_TAG_LANG_C, "Failed to create an MQTT client");
         rc =  ResponseCode::FAILURE;
