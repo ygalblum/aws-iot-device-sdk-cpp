@@ -138,3 +138,4 @@ add_subdirectory(samples/ShadowDelta)
 add_subdirectory(lang/c)
 
 add_subdirectory(samples/lang/c/pub_sub)
+add_subdirectory(samples/lang/c/shadow_delta)
