@@ -30,9 +30,7 @@ class ShadowSubsription {
 };
 
 struct shadow_ctx_s {
-    std::shared_ptr<Shadow> p_shadow;
-/*    std::shared_ptr<util::Map<
-        std::string, std::shared_ptr<MqttMsgCtx>>> p_mqtt_msg_ctx_map;*/
+    Shadow *p_shadow;
 };
 
 
@@ -42,7 +40,7 @@ void shadow_destroy(shadow_ctx_h shadow_ctx)
         return;
     }
 
-    shadow_ctx->p_shadow = nullptr;
+    delete shadow_ctx->p_shadow;
     free(shadow_ctx);
 }
 
@@ -72,8 +70,7 @@ awsiotsdk_response_code_t shadow_create(mqtt_ctx_h mqtt_ctx,
         goto Error;
     }
 
-    ctx->p_shadow = Shadow::Create(GetMqttClient(mqtt_ctx),
-        _mqtt_command_timeout, _thing_name, _client_token_prefix);
+    ctx->p_shadow = new Shadow(GetMqttClient(mqtt_ctx), _mqtt_command_timeout, _thing_name, _client_token_prefix);
     if (nullptr == ctx->p_shadow) {
         AWS_LOG_ERROR(LOG_TAG_LANG_C, "Failed to create a Shadow");
         rc =  ResponseCode::FAILURE;
