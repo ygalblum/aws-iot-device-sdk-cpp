@@ -2,9 +2,6 @@
 #include "mqtt_client.hpp"
 #include "shadow/Shadow.hpp"
 
-#include "util/logging/LogMacros.hpp"
-#define LOG_TAG_LANG_C "[Language - C]"
-
 using namespace awsiotsdk;
 
 extern "C" {
@@ -74,7 +71,6 @@ awsiotsdk_response_code_t shadow_create(mqtt_ctx_h mqtt_ctx,
     ctx->p_shadow = new Shadow(GetMqttClient(mqtt_ctx), _mqtt_command_timeout,
         _thing_name, _client_token_prefix);
     if (nullptr == ctx->p_shadow) {
-        AWS_LOG_ERROR(LOG_TAG_LANG_C, "Failed to create a Shadow");
         rc =  ResponseCode::FAILURE;
         goto Error;
     }
