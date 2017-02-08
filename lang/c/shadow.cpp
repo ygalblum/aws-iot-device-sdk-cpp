@@ -18,8 +18,9 @@ class ShadowSubsription {
             m_cb = cb;
         }
 
-		ResponseCode ActionResponseHandler(util::String thing_name, ShadowRequestType request_type,
-            ShadowResponseType response_type, util::JsonDocument &payload)
+        ResponseCode ActionResponseHandler(util::String thing_name,
+            ShadowRequestType request_type, ShadowResponseType response_type,
+            util::JsonDocument &payload)
         {
             util::String json_str = util::JsonParser::ToString(payload);
 
@@ -70,7 +71,8 @@ awsiotsdk_response_code_t shadow_create(mqtt_ctx_h mqtt_ctx,
         goto Error;
     }
 
-    ctx->p_shadow = new Shadow(GetMqttClient(mqtt_ctx), _mqtt_command_timeout, _thing_name, _client_token_prefix);
+    ctx->p_shadow = new Shadow(GetMqttClient(mqtt_ctx), _mqtt_command_timeout,
+        _thing_name, _client_token_prefix);
     if (nullptr == ctx->p_shadow) {
         AWS_LOG_ERROR(LOG_TAG_LANG_C, "Failed to create a Shadow");
         rc =  ResponseCode::FAILURE;
@@ -338,10 +340,13 @@ awsiotsdk_response_code_t add_shadow_subscription(shadow_ctx_h shadow_ctx,
                 shadowSubsription, std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3, std::placeholders::_4);
 
-        request_mapping.insert(std::make_pair((ShadowRequestType)shadow_subscription->request_type, p_action_handler));
+        request_mapping.insert(std::make_pair(
+            (ShadowRequestType)shadow_subscription->request_type,
+            p_action_handler));
     }
 
-    return (awsiotsdk_response_code_t)shadow_ctx->p_shadow->AddShadowSubscription(request_mapping);
+    return (awsiotsdk_response_code_t)
+        shadow_ctx->p_shadow->AddShadowSubscription(request_mapping);
 }
 
 /**
